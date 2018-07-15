@@ -6,8 +6,8 @@ from matplotlib import pyplot as plt
 from PyTrade.strategies.strategy import Strategy, StrategyFailedException, StrategyNotReady
 from conf.logging import create_logger
 
+# Start Logger
 create_logger()
-
 
 class StrategyBRAD(Strategy):
 
@@ -85,31 +85,32 @@ class StrategyBRAD(Strategy):
         return None
 
     def __build_strategy(self):
+        logging.info("START_BUILD_STRATEGY ")
+        logging.info("CLOSE_PRICE, "+ str(self.numpy_array["close"][-1]))
+
         # Entry Rules
         volatility_condition = self.bollinger_bandwidth[-1] >= 3    # Volatility in increasing.
         rsi_slope_condition = 6 < self.rsi_slope_angle[-1] < 89     # If RSI is moving up
         dmi__condition = self.dmi_difference[-1] > -1                # if PDMI > MDMI
-
-        #print("ENTRY--------> ",self.bollinger_bandwidth[-1], self.rsi_slope_angle[-1] , self.dmi_difference[-1])
 
         # Exit Rules
         self.stop_loss_limit = self.__stop_loss_limit()
         bbw_slope_condition = -89 < self.bw_slope_angle[-1] < 0
         stop_loss_condition = self.numpy_array["close"][-1] <= self.stop_loss_limit
 
-        #print("EXIT--------> ",self.bw_slope_angle[-1])
-        print("Stop-Loss-Limit = ", self.stop_loss_limit)
-        print("Closed at ", self.numpy_array["close"][-1])
+        logging.info("STOP_LOSS_LIMIT, "+ str(self.stop_loss_limit))
         if volatility_condition and rsi_slope_condition and dmi__condition:
+            logging.info("SIGNAL_BUY, "+ str(self.numpy_array["close"][-1]))
             self.set_states(enter_strategy=True)
 
         # Exit if Volatility is ending or Stop Loss Breached
-        elif bbw_slope_condition or self.stop_loss_limit:
-            print("-----> Selling at " , self.numpy_array["close"][-1])
+        elif bbw_slope_condition or stop_loss_condition:
+            logging.info("SIGNAL_SELL, "+ str(self.numpy_array["close"][-1]))
             self.set_states(exit_strategy=True)
             self.stop_loss_limit = 0
         else:
             self.set_states()
+        logging.info("END_BUILD_STRATEGY")
 
     def __stop_loss_limit(self):
         close = self.numpy_array["close"][-1]

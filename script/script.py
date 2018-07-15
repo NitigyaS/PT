@@ -1,9 +1,11 @@
 from time import sleep
 
+from PyTrade.broker.broker import Broker
 from PyTrade.feeds.CSVFeed import CSVFeed
 from PyTrade.feeds.RandomFeed import RandomFeed
 from PyTrade.serializer.numpyserializer import NumpySerializer
 from PyTrade.strategies.strategy_brad import StrategyBRAD
+from PyTrade.strategies.strategy_one import StrategyOne
 from PyTrade.strategyanalyser.strategyanalyser import StrategyAnalyser
 
 from conf.logging import create_logger
@@ -39,26 +41,27 @@ def loop_on_history():
 
 
 def loop_on_live():
-    csv_feed = CSVFeed("TCS", "NSE")
+    broker = Broker("test")
+    state = "SOLD"
+    stock_symbol = "TCS"
+    csv_feed = CSVFeed(stock_symbol, "NSE")
     numpy_serializer = NumpySerializer()
-    strategy_analyser = StrategyAnalyser()
     strategy = StrategyBRAD()
     for new_feed in csv_feed.get_live_feed():
         feed_data = numpy_serializer.add_bar(new_feed["data"])
         #print(feed_data["close"])
         strategy.evaluate(feed_data)
-        if strategy.should_enter():
-            strategy_analyser.add_trade(bought_at=feed_data["close"][-1])
-        if strategy.should_exit():
-            strategy_analyser.add_trade(sold_at=feed_data["close"][-1])
+        if strategy.should_enter() and state == "SOLD":
+            broker.place_order(date=feed_data["timestamp"][-1], transaction_type="BUY",symbol=stock_symbol,quantity=1,price=feed_data["close"][-1])
+            state = "BOUGHT"
+        if strategy.should_exit() and state == "BOUGHT":
+            broker.place_order(date=feed_data["timestamp"][-1], transaction_type="SELL", symbol=stock_symbol, quantity=1, price=feed_data["close"][-1])
+            state = "SOLD"
 
-    # Analyses of the Strategy
-    print("\n# Analyses of the Strategy\n")
-    print("Buy and Hold Amount: ", strategy_analyser.buy_hold_amount )
-    print("Total Profit: ", strategy_analyser.total_profit)
-    print("Number of Trades: ", strategy_analyser.total_trades)
-    print("Profit per Trade: ", strategy_analyser.profit_per_trade)
-    strategy_analyser.print_all_trades()
+    str_analyser = StrategyAnalyser("test");
+    str_analyser.analyse()
+    str_analyser.plot_equity_curve()
+
 
 
 def plot_graph():
@@ -77,3 +80,4 @@ def plot_graph():
 
 if __name__ == '__main__':
     loop_on_live()
+    plot_graph()

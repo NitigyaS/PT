@@ -23,7 +23,7 @@ class StrategyOne(Strategy):
             rsi = self.rsi[-1]
             if rsi < 35:
                 self.set_states(enter_strategy=True,exit_strategy=False)
-            elif rsi > 50:
+            elif rsi > 60:
                 self.set_states(enter_strategy=False,exit_strategy=True)
             else:
                 self.set_states()

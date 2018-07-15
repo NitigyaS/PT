@@ -12,7 +12,7 @@ def create_logger():
         Setup the logging environment
     """
     log = logging.getLogger()  # root logger
-    log.setLevel(logging.INFO)
+    log.setLevel(logging.WARN)
     format_str = "'%(asctime)s - %(module)s:" +\
                  "%(lineno)s - %(levelname)s" +\
                  " - %(message)s'"
