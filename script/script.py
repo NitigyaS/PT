@@ -1,3 +1,4 @@
+import pprint
 from time import sleep
 
 from PyTrade.broker.broker import Broker
@@ -11,7 +12,7 @@ from PyTrade.strategyanalyser.strategyanalyser import StrategyAnalyser
 from conf.logging import create_logger
 
 create_logger()
-
+pp = pprint.PrettyPrinter(indent=4)
 
 def loop_on_history():
     # Get Feed from CSV file
@@ -59,14 +60,14 @@ def loop_on_live():
             state = "SOLD"
 
     str_analyser = StrategyAnalyser("test");
-    str_analyser.analyse()
+    pp.pprint(str_analyser.analyse())
     str_analyser.plot_equity_curve()
 
 
 
 def plot_graph():
-    csv_feed = CSVFeed("BIOCON", "NSE")
-    feed = csv_feed.get_historical_data("01/07/2017", "15/6/2018")
+    csv_feed = CSVFeed("TCS", "NSE")
+    feed = csv_feed.get_historical_data("01/01/2017", "15/6/2018")
 
     # Create a Serializer convert csv data to numpy
     numpy_serializer = NumpySerializer(feed["data"])

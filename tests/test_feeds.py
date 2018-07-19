@@ -58,6 +58,8 @@ class FeedTest(unittest.TestCase):
         csv_feed = CSVFeed("TCS", "NSE")
         historic_bar = csv_feed.get_historical_data('01/07/2017','21/07/2017')
         self.assertEqual(20, len(historic_bar["data"]))
+        historic_bar = csv_feed.get_historical_data()
+        self.assertEqual(3316,len(historic_bar["data"]))
 
 
 if __name__ == "__main__":
