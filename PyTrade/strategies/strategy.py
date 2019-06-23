@@ -7,6 +7,13 @@ class Strategy(ABC):
     def __init__(self):
         self.__enter = False
         self.__exit = False
+        self.parameters = None
+
+    def set_parameters(self, **kwargs):
+        self.parameters = kwargs
+
+    def get_parameters(self):
+        return self.parameters
 
     def should_enter(self):
         """

@@ -52,13 +52,18 @@ class CSVFeed(Feed):
                          }
             yield live_feed
 
-    def get_historical_data(self, from_start_date, to_end_date):
-        length = datetime.strptime(to_end_date, '%d/%m/%Y').date() - \
+    def get_historical_data(self, from_start_date=None, to_end_date=None):
+        if from_start_date is None and to_end_date is None:
+            start_index = 0
+        else:
+            length = datetime.strptime(to_end_date, '%d/%m/%Y').date() - \
                  datetime.strptime(from_start_date, '%d/%m/%Y').date()
-        live_feed = {"code": 200,
-                     "status": "OK",
-                     "timestamp": datetime.isoformat(datetime.now()),
-                     "message": "success",
-                     "data": self.feed_data["data"][-abs(length.days):]
-                     }
-        return live_feed
+            start_index = -abs(length.days)
+
+        historical_feed = {"code": 200,
+                           "status": "OK",
+                           "timestamp": datetime.isoformat(datetime.now()),
+                           "message": "success",
+                           "data": self.feed_data["data"][start_index:]
+                           }
+        return historical_feed

@@ -20,6 +20,13 @@ class StrategyBRAD(Strategy):
         self.bw_slope_angle = None
         self.rsi_slope_angle = None
         self.stop_loss_limit = 0
+        self.parameters = {
+            "rsi_lookback_period": 14,
+            "bb_lookback_period": 20,
+            "rsi_slope_period": 5,
+            "bbw_slope_period": 5,
+            "bbw_volatility_threshold": 3
+        }
 
     @staticmethod
     def __slope_to_degrees(numpy_slope_series):
@@ -56,10 +63,10 @@ class StrategyBRAD(Strategy):
 
     def __calculate_indicator(self):
         # Create RSI Series
-        self.rsi = talib.RSI(self.numpy_array["close"], timeperiod=14)
+        self.rsi = talib.RSI(self.numpy_array["close"], self.parameters["rsi_lookback_period"])
 
         # Create Bollinger Bands
-        bollinger_upper, bollinger_middle, bollinger_lower = talib.BBANDS(self.numpy_array["close"],timeperiod=20)
+        bollinger_upper, bollinger_middle, bollinger_lower = talib.BBANDS(self.numpy_array["close"], self.parameters["bb_lookback_period"])
         self.bollinger_bandwidth = ((bollinger_upper - bollinger_lower) / bollinger_middle)*100
 
         # Calculate Directional Indicators.
@@ -76,9 +83,9 @@ class StrategyBRAD(Strategy):
         # Slope Calculation : Throws error if value is yet NaN
         try:
             self.rsi_slope_angle = self.__slope_to_degrees(talib.LINEARREG_SLOPE(self.rsi,
-                                                                                 timeperiod=5))
+                                                                                 self.parameters["rsi_slope_period"]))
             self.bw_slope_angle = self.__slope_to_degrees(talib.LINEARREG_SLOPE(self.bollinger_bandwidth,
-                                                                                timeperiod=5))
+                                                                                self.parameters["bbw_slope_period"]))
         except Exception:
             #logging.info("Value of RSI and Bollinger is null")
             raise StrategyNotReady(1, "Value of RSI and Bollinger is null")
@@ -89,7 +96,7 @@ class StrategyBRAD(Strategy):
         logging.info("CLOSE_PRICE, "+ str(self.numpy_array["close"][-1]))
 
         # Entry Rules
-        volatility_condition = self.bollinger_bandwidth[-1] >= 3    # Volatility in increasing.
+        volatility_condition = self.bollinger_bandwidth[-1] >= self.parameters["bbw_volatility_threshold"]    # Volatility in increasing.
         rsi_slope_condition = 6 < self.rsi_slope_angle[-1] < 89     # If RSI is moving up
         dmi__condition = self.dmi_difference[-1] > -1                # if PDMI > MDMI
 
