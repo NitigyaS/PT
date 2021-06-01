@@ -37,7 +37,7 @@ sphinxcontrib-websupport==1.1.0
 stevedore==1.28.0
 TA-Lib==0.4.17
 tornado==5.0.2
-urllib3==1.23
+urllib3==1.26.5
 virtualenv==16.0.0
 virtualenv-clone==0.3.0
 virtualenvwrapper==4.8.2
